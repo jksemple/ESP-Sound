@@ -4,25 +4,6 @@ static QueueHandle_t clipQueueHandle;
 
 DMA_ATTR static signed short i2sBuffer[I2S_BUFFER_SIZE];
 
-static void *_malloc(size_t size, const char* FILE, const int LINE)
-{
-    // check if SPIRAM is enabled and allocate on SPIRAM if allocatable
-#if (CONFIG_SPIRAM_SUPPORT && (CONFIG_SPIRAM_USE_CAPS_ALLOC || CONFIG_SPIRAM_USE_MALLOC))
-	auto before = ESP.getFreePsram();
-	void* block = heap_caps_malloc(size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-	log_i("PS RAM: %d/%d less %d as %08x-%08x => %d/%d at [%s:%d]", before, ESP.getPsramSize(), size, block, (uint8_t*)block + size-1, ESP.getFreePsram(), ESP.getPsramSize(), FILE, LINE);
-	if (block) return block;
-	throw std::out_of_range(StringF("[%s:%d] Failed to alloc %d", FILE, LINE, size).c_str());
-#else
-	throw std::out_of_range(StringF("[%s:%d] No PS RAM", FILE, LINE, size).c_str());
-#endif
-}
-
-static void _free(void* block, const char* FILE, const int LINE) {
-	log_i("Free %x at [%s %d]", block, FILE, LINE);
-	std::free(block);
-}
-
 Clip::Clip () :
 	maxSize(Sound::_clipSize),
 	length(0),
@@ -80,7 +61,7 @@ Clip& Clip::operator=(Clip&& that) noexcept { // Move assignment operator
 
 void Clip::appendSamples(int16_t* source, size_t count) {
   if (count == 0) throw std::logic_error(StringF("[%s:%d] count == 0", __FILE__, __LINE__).c_str());
-  // Allow buffer to be expanded to cope with long Clips e.g. read from a file
+  // Allow buffer to be expanded to cope with longer than normal Clips if needed
 	if (length == 0) {
     if (count > maxSize) maxSize = count;
   }
