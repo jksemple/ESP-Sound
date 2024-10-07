@@ -1,6 +1,6 @@
 # ESP-Sound
  
-This library allows WAV sounds to be loaded from file, caotured from mic and saved to file on ESP32 with PS_RAM
+This library allows WAV sounds to be loaded from file, captured from mic and saved to file on ESP32 with PS_RAM
 
 ## Loading
 
@@ -38,7 +38,7 @@ mySound2.append(std::move(mySound3)); // Consume mySound3's sample buffer
 Sound::startMic(); // Start a separate listening thread 
 Clip* myClip;
 if (Sound::getMicClip(myClip)) {
-  mySound4.append(std::move(*myClip);
+  mySound4.append(std::move(*myClip));
 }
 Sound::stopMic();
 mySound4.toFile("/def.jpg").save();
